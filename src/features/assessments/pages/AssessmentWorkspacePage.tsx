@@ -18,6 +18,9 @@ import { RiskInvestigation } from '@/features/risk-analysis/components/RiskInves
 import { AssessmentReportPanel } from '@/features/reports/components/AssessmentReportPanel'
 import { formatDate, formatCurrency } from '@/lib/formatters'
 import { ApiError, toUserMessage } from '@/services/api/errors'
+import { useFinancialAnalysis } from '@/features/financial-analysis/hooks/useFinancialAnalysis'
+import { StructuredInsightsView } from '@/features/financial-analysis/components/StructuredInsightsView'
+import type { StructuredLlmInsight } from '@/features/financial-analysis/types'
 import { AssessmentForm } from '../components/AssessmentForm'
 import { StageStepper } from '../components/StageStepper'
 import { useAssessment, useDeleteAssessment, useUpdateAssessment } from '../hooks/useAssessments'
@@ -26,6 +29,14 @@ import { currentStage, STAGES, type Assessment, type StageKey } from '../types'
 function StageBody({ a, stage }: { a: Assessment; stage: StageKey }) {
   const update = useUpdateAssessment(a.id)
   const toast = useToast()
+  const [, setParams] = useSearchParams()
+  const { data: analysis } = useFinancialAnalysis(a.id)
+
+  const navigateToInvestigation = (insight: StructuredLlmInsight) => {
+    setParams({ stage: 'investigation', search: insight.title }, { replace: true })
+    toast.info(`Navigated to Risk Investigation for ${insight.title}`)
+  }
+
   switch (stage) {
     case 'company':
       return (
@@ -68,7 +79,11 @@ function StageBody({ a, stage }: { a: Assessment; stage: StageKey }) {
           <DocumentUploader assessmentId={a.id} />
           <Card>
             <CardHeader title="Uploaded documents" />
-            <DocumentsList query={{ assessmentId: a.id }} emptyHint="Upload bank statements, balance sheets, P&L, cash-flow statements or GST returns to begin." />
+            <DocumentsList
+              query={{ assessmentId: a.id }}
+              showExtractionCount={false}
+              emptyHint="Upload bank statements, balance sheets, P&L, cash-flow statements or GST returns to begin."
+            />
           </Card>
         </div>
       )
@@ -76,9 +91,19 @@ function StageBody({ a, stage }: { a: Assessment; stage: StageKey }) {
       return (
         <div className="space-y-4">
           <ExtractionSummary assessmentId={a.id} />
+          {analysis?.structuredInsights && analysis.structuredInsights.length > 0 && (
+            <StructuredInsightsView
+              insights={analysis.structuredInsights}
+              onInvestigate={navigateToInvestigation}
+            />
+          )}
           <Card>
-            <CardHeader title="Extraction status" description="Failed documents can be retried. Open a document to see the fields extracted from it." />
-            <DocumentsList query={{ assessmentId: a.id }} emptyHint="Nothing to process yet. Upload documents in the previous stage." />
+            <CardHeader title="Extracted document records & fields" description="Failed documents can be retried. Open a document to see the fields extracted from it." />
+            <DocumentsList
+              query={{ assessmentId: a.id }}
+              showExtractionCount={true}
+              emptyHint="Nothing to process yet. Upload documents in the previous stage."
+            />
           </Card>
         </div>
       )

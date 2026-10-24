@@ -20,9 +20,16 @@ interface Props {
   showCompany?: boolean
   emptyHint?: string
   filtered?: boolean
+  showExtractionCount?: boolean
 }
 
-export function DocumentsList({ query, showCompany, emptyHint, filtered }: Props) {
+export function DocumentsList({
+  query,
+  showCompany,
+  emptyHint,
+  filtered,
+  showExtractionCount = true,
+}: Props) {
   const { data, isLoading, isError, error, refetch } = useDocuments(query)
   const retry = useRetryDocument()
   const del = useDeleteDocument()
@@ -83,8 +90,7 @@ export function DocumentsList({ query, showCompany, emptyHint, filtered }: Props
                 <DocumentStatusBadge status={d.status} />
                 {d.status === 'processing' && d.progress !== undefined && <Progress className="mt-1.5 max-w-32" value={d.progress} label={`Processing ${d.name}`} />}
                 {d.status === 'failed' && <p className="mt-1 line-clamp-2 max-w-64 text-xs text-risk-high">{d.error ?? 'Extraction failed.'}</p>}
-                {d.status === 'completed' && d.simulated && <p className="mt-1 text-xs text-risk-med">Simulated · not parsed</p>}
-                {d.status === 'completed' && !d.simulated && d.extractedFieldCount !== undefined && <p className="num mt-1 text-xs text-ink-3">{d.extractedFieldCount} fields extracted</p>}
+                {d.status === 'completed' && showExtractionCount && d.extractedFieldCount !== undefined && <p className="num mt-1 text-xs text-ink-3">{d.extractedFieldCount} fields extracted</p>}
               </Td>
               <Td>
                 <div className="flex justify-end gap-0.5">

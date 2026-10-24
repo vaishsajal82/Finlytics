@@ -167,12 +167,11 @@ export function AssessmentForm({ defaultValues, submitLabel, onSubmit, onCancel 
       </fieldset>
 
       <fieldset className="rounded-lg border border-border p-4">
-        <legend className="px-1 text-[13px] font-medium text-ink-2">Company identifiers (optional)</legend>
-        <p className="mb-3 text-xs text-ink-3">Used by TinyFish to locate corporate filings, litigation records, and tax returns.</p>
+        <legend className="px-1 text-[13px] font-medium text-ink-2">Company identifiers</legend>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Input label="CIN" optional className="uppercase" placeholder="U21022MH2016PTC284910" error={errors.cin?.message} {...register('cin')} />
-          <Input label="GSTIN" optional className="uppercase" placeholder="27AABCM8291Q1ZM" error={errors.gstin?.message} {...register('gstin')} />
-          <Input label="PAN" optional className="uppercase" placeholder="AABCM8291Q" error={errors.pan?.message} {...register('pan')} />
+          <Input label="CIN" className="uppercase" placeholder="U21022MH2016PTC284910" error={errors.cin?.message} {...register('cin')} />
+          <Input label="GSTIN" className="uppercase" placeholder="27AABCM8291Q1ZM" error={errors.gstin?.message} {...register('gstin')} />
+          <Input label="PAN" className="uppercase" placeholder="AABCM8291Q" error={errors.pan?.message} {...register('pan')} />
         </div>
       </fieldset>
 

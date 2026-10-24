@@ -24,7 +24,34 @@ interface Staged {
   state: 'ready' | 'uploading' | 'failed'
 }
 
-const typeOptions = (Object.keys(DOCUMENT_TYPE_LABEL) as DocumentType[]).map((t) => ({ value: t, label: DOCUMENT_TYPE_LABEL[t] }))
+export const ALLOWED_DOCUMENT_TYPES: DocumentType[] = [
+  'audited_financials',
+  'profit_loss',
+  'balance_sheet',
+  'cash_flow',
+  'bank_statement',
+  'gst_return',
+  'itr',
+  'ar_ageing',
+  'ap_ageing',
+]
+
+export const ALLOWED_DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  audited_financials: 'Audited financials',
+  profit_loss: 'P&L (Profit and loss statement)',
+  balance_sheet: 'Balance sheet',
+  cash_flow: 'Cash flow statement',
+  bank_statement: 'Bank statement',
+  gst_return: 'GST returns',
+  itr: 'ITR (Income tax return)',
+  ar_ageing: 'AR ageing (Accounts receivable)',
+  ap_ageing: 'AP ageing (Accounts payable)',
+}
+
+const typeOptions = ALLOWED_DOCUMENT_TYPES.map((t) => ({
+  value: t,
+  label: ALLOWED_DOCUMENT_TYPE_LABELS[t] ?? DOCUMENT_TYPE_LABEL[t],
+}))
 
 export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
   const input = useRef<HTMLInputElement>(null)
@@ -53,7 +80,11 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
       }
       const reason = validateFile(file)
       if (reason) bad.push({ name: file.name, reason })
-      else ok.push({ id: uid('f'), file, type: guessDocumentType(file.name), progress: 0, state: 'ready' })
+      else {
+        const guessed = guessDocumentType(file.name)
+        const type: DocumentType = ALLOWED_DOCUMENT_TYPES.includes(guessed) ? guessed : 'audited_financials'
+        ok.push({ id: uid('f'), file, type, progress: 0, state: 'ready' })
+      }
     }
 
     if (dupFound) {
@@ -72,7 +103,7 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
       { name: 'Meridian_HDFC_Bank_Statement_FY24-25.pdf', type: 'bank_statement' as DocumentType, size: 5210000 },
       { name: 'Meridian_GSTR-3B_FY25_Consolidated.pdf', type: 'gst_return' as DocumentType, size: 1840000 },
       { name: 'Meridian_AR_Ageing_Schedule_Q4FY25.xlsx', type: 'ar_ageing' as DocumentType, size: 890000 },
-      { name: 'Meridian_MCA21_Company_Master_Data.pdf', type: 'registration_docs' as DocumentType, size: 450000 },
+      { name: 'Meridian_Balance_Sheet_FY24-25.pdf', type: 'balance_sheet' as DocumentType, size: 1450000 },
     ]
 
     const newStaged: Staged[] = sampleFiles.map((sf) => {
@@ -107,14 +138,14 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
     for (const item of staged.filter((s) => s.state !== 'uploading')) {
       patch(item.id, { state: 'uploading', progress: 0, error: undefined })
       try {
-        const userCategory = DOCUMENT_TYPE_LABEL[item.type]
+        const userCategory = ALLOWED_DOCUMENT_TYPE_LABELS[item.type] ?? DOCUMENT_TYPE_LABEL[item.type]
         await documentService.upload(
           assessmentId,
           item.file,
           item.type,
           (p) => patch(item.id, { progress: p }),
           userCategory,
-          item.type === 'other' ? item.customCategory : undefined,
+          undefined,
         )
         setStaged((s) => s.filter((x) => x.id !== item.id))
         okCount += 1
@@ -135,7 +166,7 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
     <section aria-label="Upload documents" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-accent/20 bg-accent-soft/30 px-3.5 py-2.5">
         <div className="text-xs text-ink-2">
-          <span className="font-semibold text-accent">Quick Test Pack:</span> Stage 5 pre-configured SME financial documents (Audited P&amp;L, Bank Statement, GST, AR Ageing, MCA).
+          <span className="font-semibold text-accent">Quick Test Pack:</span> Stage 5 pre-configured SME financial documents (Audited Financials, Balance Sheet, Bank Statement, GST, AR Ageing).
         </div>
         <Button
           type="button"
@@ -205,7 +236,7 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
       {staged.length > 0 && (
         <div className="rounded-lg border border-border bg-surface">
           <div className="border-b border-border bg-surface-muted px-3 py-2 text-xs font-medium text-ink-2">
-            Staged files ({staged.length}) — explicitly assign document category
+            Staged files ({staged.length}) — restricted to supported financial documents
           </div>
           <ul className="divide-y divide-border">
             {staged.map((s) => (
@@ -230,15 +261,6 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
                     onChange={(e) => patch(s.id, { type: e.target.value as DocumentType })}
                     className="w-56"
                   />
-                  {s.type === 'other' && (
-                    <input
-                      type="text"
-                      placeholder="Custom category name..."
-                      value={s.customCategory ?? ''}
-                      onChange={(e) => patch(s.id, { customCategory: e.target.value })}
-                      className="h-9 w-44 rounded-md border border-border-strong px-2.5 text-xs text-ink placeholder:text-ink-3 focus:outline-accent"
-                    />
-                  )}
                   <button
                     type="button"
                     disabled={s.state === 'uploading'}
@@ -255,7 +277,7 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
           <div className="flex items-center justify-between gap-3 border-t border-border bg-surface-muted px-3 py-2.5">
             <p className="flex items-center gap-1.5 text-xs text-ink-3">
               <CheckCircle2 className="size-3.5 text-risk-low" aria-hidden />
-              Categories confirmed by user will be available to financial analysis.
+              Only supported financial documents (Audited financials, P&amp;L, Balance sheet, Cash flow, Bank statements, GST returns, ITR, AR/AP ageing) are processed.
             </p>
             <Button variant="primary" loading={busy} onClick={() => void uploadAll()}>
               Upload {staged.length} file{staged.length > 1 ? 's' : ''}

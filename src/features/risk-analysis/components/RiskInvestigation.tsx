@@ -2,21 +2,17 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowRight,
-  RotateCw,
   Search,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react'
 import { ClassBadge, ReviewBadge, SeverityBadge } from '@/components/data-display/badges'
 import { useToast } from '@/components/feedback/Toast'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Dialog } from '@/components/ui/Dialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Select } from '@/components/ui/Field'
-import { Progress } from '@/components/ui/Progress'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAssessment } from '@/features/assessments/hooks/useAssessments'
 import { useFinancialAnalysis } from '@/features/financial-analysis/hooks/useFinancialAnalysis'
@@ -25,7 +21,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
 import { calculateRiskScorecard } from '@/services/demo/riskScoring'
 import type { Severity } from '@/types/common'
-import { useFindings, useRunTinyFishResearch } from '../hooks/useFindings'
+import { useFindings } from '../hooks/useFindings'
 import {
   CLASS_LABEL,
   REVIEW_LABEL,
@@ -69,9 +65,6 @@ export function RiskInvestigation({ assessmentId, emptyHint }: { assessmentId?: 
   const [reviewStatus, setReviewStatus] = useState<ReviewStatus | ''>('')
   const [selectedCategory, setSelectedCategory] = useState<RiskCategory | ''>('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [isResearching, setIsResearching] = useState(false)
-  const [researchStep, setResearchStep] = useState<string>('')
-  const [researchProgress, setResearchProgress] = useState(0)
 
   const wide = useMediaQuery('(min-width: 1024px)')
   const q = useDebouncedValue(search)
@@ -87,8 +80,6 @@ export function RiskInvestigation({ assessmentId, emptyHint }: { assessmentId?: 
     classification,
     reviewStatus,
   })
-
-  const runResearch = useRunTinyFishResearch()
 
   const filtered = Boolean(q || severity || classification || reviewStatus || selectedCategory)
 
@@ -108,37 +99,6 @@ export function RiskInvestigation({ assessmentId, emptyHint }: { assessmentId?: 
     assessment?.requestedLoanAmount ?? 20000000,
   )
 
-  const handleRunTinyFish = async () => {
-    if (!assessmentId) return
-    setIsResearching(true)
-    setResearchProgress(15)
-    setResearchStep('Connecting to TinyFish simulated intelligence engine...')
-
-    setTimeout(() => {
-      setResearchProgress(40)
-      setResearchStep('Scanning MCA-21 master records & e-Courts litigation registries...')
-    }, 600)
-
-    setTimeout(() => {
-      setResearchProgress(75)
-      setResearchStep('Cross-referencing GSTIN turnover vs audited financials & trade media...')
-    }, 1200)
-
-    setTimeout(async () => {
-      setResearchProgress(100)
-      setResearchStep('Synthesizing evidence records & evaluating risk hypotheses...')
-      try {
-        await runResearch.mutateAsync(assessmentId)
-        setIsResearching(false)
-        toast.success('TinyFish external research completed. Evidence records and risk scorecard updated.')
-        void refetch()
-      } catch {
-        setIsResearching(false)
-        toast.error('Simulation completed with cached findings.')
-      }
-    }, 1800)
-  }
-
   const navigateToReport = () => {
     setParams({ stage: 'report' }, { replace: true })
     toast.info('Switched to Final Decision-Support Report stage.')
@@ -148,41 +108,6 @@ export function RiskInvestigation({ assessmentId, emptyHint }: { assessmentId?: 
     <div className="space-y-4">
       {/* Risk Scorecard Banner */}
       <RiskScorecardBanner scorecard={scorecard} />
-
-      {/* TinyFish Research Control Bar */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-accent" />
-              <h3 className="text-sm font-semibold text-ink">TinyFish External Research Engine</h3>
-              <Badge tone="accent">Simulated Research</Badge>
-            </div>
-            <p className="mt-1 text-xs text-ink-3">
-              Automated queries across MCA-21 corporate registry, e-Courts national portal, GST portal, and trade media. All claims backed by traceable source records.
-            </p>
-          </div>
-          <Button
-            variant="secondary"
-            loading={isResearching}
-            onClick={handleRunTinyFish}
-            className="shrink-0 gap-2 text-xs text-accent"
-          >
-            <RotateCw className="size-3.5" />
-            Re-run TinyFish Research
-          </Button>
-        </div>
-
-        {isResearching && (
-          <div className="mt-3.5 rounded-lg border border-accent/30 bg-accent-soft/40 p-3 text-xs">
-            <div className="flex items-center justify-between font-medium text-ink">
-              <span>{researchStep}</span>
-              <span className="num font-semibold text-accent">{researchProgress}%</span>
-            </div>
-            <Progress className="mt-2" value={researchProgress} label={researchStep} />
-          </div>
-        )}
-      </Card>
 
       {/* Search & Filters */}
       <Card>
@@ -318,7 +243,7 @@ export function RiskInvestigation({ assessmentId, emptyHint }: { assessmentId?: 
         <div>
           <h4 className="text-sm font-semibold text-ink">Ready to compile final assessment?</h4>
           <p className="text-xs text-ink-3">
-            Consolidate borrower financials, TinyFish evidence register, stress scenarios, and preliminary credit recommendation.
+            Consolidate borrower financials, evidence register, stress scenarios, and preliminary credit recommendation.
           </p>
         </div>
         <Button variant="primary" onClick={navigateToReport} className="gap-2">
