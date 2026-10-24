@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
-  FileText,
   Printer,
   ShieldCheck,
 } from 'lucide-react'
@@ -15,8 +14,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { downloadBlob } from '@/lib/utils'
-import { reportToMarkdown } from '@/services/demo/reportBuilder'
 import type { Report } from '../types'
+import { exportReportToPdf } from '../utils/pdfExport'
 
 export function ReportView({ report }: { report: Report }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -25,9 +24,12 @@ export function ReportView({ report }: { report: Report }) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  const exportMarkdown = () => {
-    const md = reportToMarkdown(report.companyName, report.draft, report.sections)
-    downloadBlob(`${report.companyName.replace(/\W+/g, '_')}_due_diligence_report.md`, md, 'text/markdown')
+  const exportPdf = () => {
+    try {
+      exportReportToPdf(report)
+    } catch {
+      window.print()
+    }
   }
 
   const exportJson = () => {
@@ -74,13 +76,13 @@ export function ReportView({ report }: { report: Report }) {
           </div>
 
           <div className="flex flex-wrap gap-2 no-print">
+            <Button size="sm" variant="primary" onClick={exportPdf} className="gap-1.5 text-xs">
+              <Download className="size-3.5" />
+              Export PDF
+            </Button>
             <Button size="sm" variant="secondary" onClick={printReport} className="gap-1.5 text-xs">
               <Printer className="size-3.5" />
               Print / Save PDF
-            </Button>
-            <Button size="sm" variant="secondary" onClick={exportMarkdown} className="gap-1.5 text-xs">
-              <FileText className="size-3.5" />
-              Export Markdown
             </Button>
             <Button size="sm" variant="secondary" onClick={exportJson} className="gap-1.5 text-xs">
               <Download className="size-3.5" />
@@ -238,9 +240,9 @@ export function ReportView({ report }: { report: Report }) {
             <ArrowUp className="size-3.5" />
             Back to Top
           </Button>
-          <Button size="sm" variant="secondary" onClick={exportMarkdown} className="gap-1.5 text-xs">
-            <FileText className="size-3.5" />
-            Download Markdown
+          <Button size="sm" variant="primary" onClick={exportPdf} className="gap-1.5 text-xs">
+            <Download className="size-3.5" />
+            Download PDF Report
           </Button>
         </div>
       </div>

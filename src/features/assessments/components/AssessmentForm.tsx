@@ -138,32 +138,7 @@ export function AssessmentForm({ defaultValues, submitLabel, onSubmit, onCancel 
             {...register('operatingHistory')}
           />
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <Input
-            label="Annual turnover (approx)"
-            type="number"
-            step="1000000"
-            placeholder="466000000"
-            hint="Latest financial year total revenue"
-            error={errors.annualTurnover?.message}
-            {...register('annualTurnover')}
-          />
-          <Input
-            label="Existing debt obligations"
-            type="number"
-            step="1000000"
-            placeholder="182000000"
-            hint="Current outstanding term loans + WC lines"
-            error={errors.existingDebt?.message}
-            {...register('existingDebt')}
-          />
-          <Input
-            label="Assigned credit analyst"
-            placeholder="e.g. Priya Sharma (Senior Underwriter)"
-            error={errors.assignedAnalyst?.message}
-            {...register('assignedAnalyst')}
-          />
-        </div>
+
       </fieldset>
 
       <fieldset className="rounded-lg border border-border p-4">

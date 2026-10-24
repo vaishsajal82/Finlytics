@@ -1,11 +1,10 @@
-import { Download, Eye, FileText, RotateCw } from 'lucide-react'
+import { Download, Eye, RotateCw } from 'lucide-react'
 import { useToast } from '@/components/feedback/Toast'
 import { Button } from '@/components/ui/Button'
-import { downloadBlob } from '@/lib/utils'
 import { toUserMessage } from '@/services/api/errors'
-import { reportToMarkdown } from '@/services/demo/reportBuilder'
 import { useGenerateReport } from '../hooks/useReports'
 import type { Report } from '../types'
+import { exportReportToPdf } from '../utils/pdfExport'
 
 interface Props {
   report: Report
@@ -22,8 +21,13 @@ export function ReportActions({ report, onPreview }: Props) {
       onError: (e) => toast.error(toUserMessage(e)),
     })
 
-  const exportMd = () => {
-    downloadBlob(`${report.companyName.replace(/\W+/g, '_')}_report.md`, reportToMarkdown(report.companyName, report.draft, report.sections), 'text/markdown')
+  const exportPdf = () => {
+    try {
+      exportReportToPdf(report)
+      toast.success('Report downloaded in PDF format.')
+    } catch {
+      toast.error('Could not generate PDF.')
+    }
   }
 
   if (report.status === 'ready') {
@@ -41,9 +45,9 @@ export function ReportActions({ report, onPreview }: Props) {
             Download file
           </a>
         )}
-        <Button size="sm" onClick={exportMd}>
-          <FileText className="size-4" aria-hidden />
-          Export Markdown
+        <Button size="sm" onClick={exportPdf}>
+          <Download className="size-4" aria-hidden />
+          Export PDF
         </Button>
         <Button size="sm" variant="ghost" loading={gen.isPending} onClick={generate} aria-label={`Regenerate report for ${report.companyName}`}>
           <RotateCw className="size-4" aria-hidden />

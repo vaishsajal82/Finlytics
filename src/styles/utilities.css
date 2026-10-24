@@ -4,3 +4,54 @@
 @utility scroll-thin {
   scrollbar-width: thin;
 }
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+@utility perspective-1400 {
+  perspective: 1400px;
+}
+@utility backface-hidden {
+  backface-visibility: hidden;
+}
+
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+@keyframes pulse-sheen {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-float-subtle {
+  animation: float-subtle 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 7s ease-in-out infinite;
+}
+
+.animate-sheen {
+  animation: pulse-sheen 4s ease-in-out infinite;
+}

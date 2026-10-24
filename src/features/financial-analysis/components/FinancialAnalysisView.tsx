@@ -195,7 +195,7 @@ export function FinancialAnalysisView({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-ink">Comprehensive Financial Ratio &amp; Metric Schedules</h3>
-          <span className="text-xs text-ink-3">Formulas, numerators, denominators, and audit sources</span>
+          <span className="text-xs text-ink-3">Formulas, benchmarks, and audit sources</span>
         </div>
 
         {GROUPS.map((g) => {

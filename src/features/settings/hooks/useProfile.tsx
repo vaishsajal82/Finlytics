@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { loadProfile, saveProfile } from '../services/settingsService'
 import type { Profile } from '../types'
 
@@ -10,15 +10,17 @@ const Ctx = createContext<ProfileCtx | null>(null)
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile>(loadProfile)
+  const update = useCallback((p: Profile) => {
+    saveProfile(p)
+    setProfile(p)
+  }, [])
+
   const value = useMemo<ProfileCtx>(
     () => ({
       profile,
-      update: (p) => {
-        saveProfile(p)
-        setProfile(p)
-      },
+      update,
     }),
-    [profile],
+    [profile, update],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

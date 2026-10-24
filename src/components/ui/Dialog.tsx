@@ -10,7 +10,7 @@ interface DialogProps {
   description?: string
   children: ReactNode
   footer?: ReactNode
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 }
 
 /** Built on native <dialog>: focus trap, Esc to close and inert background come from the platform. */
@@ -37,6 +37,8 @@ export function Dialog({ open, onClose, title, description, children, footer, si
         size === 'sm' && 'max-w-md',
         size === 'md' && 'max-w-xl',
         size === 'lg' && 'max-w-3xl',
+        size === 'xl' && 'max-w-4xl',
+        size === '2xl' && 'max-w-5xl',
       )}
     >
       {open && (

@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useMatches, useNavigate } from 'react-router-dom'
-import { ChevronRight, Menu, Plus, Search } from 'lucide-react'
+import { ChevronRight, LogOut, Menu, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useProfile } from '@/features/settings/hooks/useProfile'
 import { initials } from '@/lib/utils'
 
@@ -14,6 +15,7 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   const matches = useMatches()
   const navigate = useNavigate()
   const { profile } = useProfile()
+  const { logout } = useAuth()
   const [q, setQ] = useState('')
 
   const last = matches[matches.length - 1]
@@ -24,6 +26,11 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     navigate(q.trim() ? `/assessments?q=${encodeURIComponent(q.trim())}` : '/assessments')
+  }
+
+  const handleSignOut = () => {
+    logout()
+    navigate('/auth?mode=login')
   }
 
   return (
@@ -71,9 +78,25 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
         <span className="sm:hidden">New</span>
       </Button>
 
-      <Link to="/settings" aria-label={`Profile and settings for ${profile.name}`} className="flex size-8 items-center justify-center rounded-full bg-nav text-xs font-semibold text-white hover:bg-nav-active">
-        {initials(profile.name) || '?'}
-      </Link>
+      <div className="flex items-center gap-1.5">
+        <Link
+          to="/settings"
+          aria-label={`Profile and settings for ${profile.name}`}
+          className="flex size-8 items-center justify-center rounded-full bg-nav text-xs font-semibold text-white hover:bg-nav-active"
+          title={`${profile.name} (${profile.role || 'Credit Underwriter'})`}
+        >
+          {initials(profile.name) || '?'}
+        </Link>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          aria-label="Sign out / Switch account"
+          title="Sign out / Switch account"
+          className="rounded p-1.5 text-ink-3 transition-colors hover:bg-neutral-soft hover:text-ink"
+        >
+          <LogOut className="size-4" aria-hidden />
+        </button>
+      </div>
     </header>
   )
 }

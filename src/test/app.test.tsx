@@ -8,15 +8,20 @@ import { ToastProvider } from '@/components/feedback/Toast'
 import { ProfileProvider } from '@/features/settings/hooks/useProfile'
 import { resetDemo } from '@/services/demo/db'
 
+import { AuthProvider } from '@/features/auth/hooks/useAuth'
+import { authService } from '@/features/auth/services/authService'
+
 function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <ProfileProvider>
-        <ToastProvider>
-          <RouterProvider router={router} />
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
+        </AuthProvider>
       </ProfileProvider>
     </QueryClientProvider>,
   )
@@ -25,6 +30,13 @@ function renderAt(path: string) {
 beforeEach(() => {
   localStorage.clear()
   resetDemo()
+  authService.register({
+    id: 'priya.sharma@finlytics.ai',
+    name: 'Priya Sharma',
+    password: 'password123',
+    role: 'Senior Underwriter',
+    organisation: 'Finlytics Risk Analytics',
+  })
 })
 
 describe('routes render', () => {

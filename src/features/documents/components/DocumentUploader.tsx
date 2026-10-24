@@ -1,6 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle2, FileUp, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileUp, X } from 'lucide-react'
 import { useToast } from '@/components/feedback/Toast'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Field'
@@ -97,32 +97,6 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
     setStaged((s) => [...s, ...ok])
   }
 
-  const loadSamplePack = () => {
-    const sampleFiles = [
-      { name: 'Meridian_FY24_Audited_Financials.pdf', type: 'audited_financials' as DocumentType, size: 3420000 },
-      { name: 'Meridian_HDFC_Bank_Statement_FY24-25.pdf', type: 'bank_statement' as DocumentType, size: 5210000 },
-      { name: 'Meridian_GSTR-3B_FY25_Consolidated.pdf', type: 'gst_return' as DocumentType, size: 1840000 },
-      { name: 'Meridian_AR_Ageing_Schedule_Q4FY25.xlsx', type: 'ar_ageing' as DocumentType, size: 890000 },
-      { name: 'Meridian_Balance_Sheet_FY24-25.pdf', type: 'balance_sheet' as DocumentType, size: 1450000 },
-    ]
-
-    const newStaged: Staged[] = sampleFiles.map((sf) => {
-      // Create empty synthetic File object
-      const blob = new Blob(['%PDF-1.4 financial data payload'], { type: 'application/pdf' })
-      const file = new File([blob], sf.name, { type: 'application/pdf' })
-      Object.defineProperty(file, 'size', { value: sf.size })
-      return {
-        id: uid('sample'),
-        file,
-        type: sf.type,
-        progress: 0,
-        state: 'ready',
-      }
-    })
-
-    setStaged((s) => [...s, ...newStaged])
-    toast.info('Loaded 5 sample financial documents into staging. Confirm categories and click Upload.')
-  }
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault()
@@ -164,23 +138,6 @@ export function DocumentUploader({ assessmentId }: { assessmentId: string }) {
 
   return (
     <section aria-label="Upload documents" className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-accent/20 bg-accent-soft/30 px-3.5 py-2.5">
-        <div className="text-xs text-ink-2">
-          <span className="font-semibold text-accent">Quick Test Pack:</span> Stage 5 pre-configured SME financial documents (Audited Financials, Balance Sheet, Bank Statement, GST, AR Ageing).
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          onClick={loadSamplePack}
-          disabled={busy}
-          className="gap-1.5 text-xs text-accent"
-        >
-          <Sparkles className="size-3.5" />
-          Load Sample Financial Pack
-        </Button>
-      </div>
-
       <div
         onDragOver={(e) => {
           e.preventDefault()
