@@ -1,0 +1,6 @@
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+@utility scroll-thin {
+  scrollbar-width: thin;
+}

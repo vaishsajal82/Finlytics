@@ -1,0 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
+import { dashboardService } from '../services/dashboardService'
+
+export const useOverview = () => useQuery({ queryKey: ['overview'], queryFn: dashboardService.overview })
